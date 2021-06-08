@@ -1,5 +1,6 @@
 const axios = require('axios');
 const web3 = require('web3');
+const chalk = require('chalk');
 
 const getQuote = async (fromToken,fromTokenAmount) => {
 
@@ -24,11 +25,13 @@ const getQuote = async (fromToken,fromTokenAmount) => {
         
     } catch (error) {
         
-        console.error("Error en 1inch");
+        console.error(chalk.black.bgRed("Error en 1inch"));
+
+        // console.log(error);
         
         if(error.isAxiosError) {
 
-            console.log("Error isAxiosError")
+            console.log(chalk.red(error.response.data.message));
 
         }
 

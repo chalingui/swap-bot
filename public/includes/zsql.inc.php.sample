@@ -1,0 +1,38 @@
+<?php
+	define('DEBUG', false);
+	error_reporting(E_ALL);
+	
+	if (DEBUG)
+	{
+		ini_set('display_errors', 'On');
+	}
+	else
+	{
+		ini_set('display_errors', 'Off');
+	}
+
+	// ==================================================================
+	//  Author: Justin Vincent (justin@visunet.ie)
+	//	Web: 	http://php.justinvincent.com
+	//	Name: 	ezSQL
+	// 	Desc: 	Class to make it very easy to deal with mySQL database connections.
+	//
+	// !! IMPORTANT !!
+	//
+	//  Please send me a mail telling me what you think of ezSQL
+	//  and what your using it for!! Cheers. [ justin@visunet.ie ]
+	//
+	// ==================================================================
+	// User Settings -- CHANGE HERE
+	define("DB_USER", "");				// <-- mysql db user
+	define("DB_PASSWORD", "");					// <-- mysql db password
+	define("DB_NAME", "");		// <-- mysql db pname
+	define("DB_HOST", "localhost");				// <-- mysql server host
+
+	include "ez_sql_core.php";
+	include "ez_sql_mysqli.php";
+	
+	$db = new ezSQL_mysqli(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+
+	$db->query("SET SESSION sql_mode = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'");
+?>

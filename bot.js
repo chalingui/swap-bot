@@ -44,13 +44,13 @@ async function run() {
 
         const fromToken = 'BUSD';
 
-        const trade_price = parseFloat(base_price*(100+parseFloat(process.env.PERCENT))/100).toFixed(6);
+        const target_price = parseFloat(base_price*(100+parseFloat(process.env.PERCENT))/100).toFixed(6);
 
         const fromTokenAmount = process.env.AMOUNT;
 
-        const targetAmount = fromTokenAmount*trade_price;
+        const targetAmount = fromTokenAmount*target_price;
 
-        console.log(`<== Sell price: `+chalk.green(trade_price)+` - Wanting: ${chalk.green(parseFloat(targetAmount).toFixed(6))} VAI`);
+        console.log(`<== Sell price: `+chalk.green(target_price)+` - Wanting: ${chalk.green(parseFloat(targetAmount).toFixed(6))} VAI`);
 
         // VOY A 1INCH CON EL TOKEN Y EL PRECIO QUE QUIERO PAGAR
         const response  = await api_oneinch.getQuote(fromToken,fromTokenAmount);
@@ -63,12 +63,12 @@ async function run() {
 
         console.log(`==> Curr price: ${chalk.yellow(parseFloat(market_price).toFixed(6))} - Getting: ${chalk.yellow(parseFloat(toTokenAmount).toFixed(6))} VAI`);
 
-        console.log(`==> Diff price: ${chalk.red(parseFloat(trade_price - market_price).toFixed(6))} - Waiting: ${chalk.red(parseFloat(targetAmount - toTokenAmount).toFixed(6))} VAI`);
+        console.log(`==> Diff price: ${chalk.red(parseFloat(target_price - market_price).toFixed(6))} - Waiting: ${chalk.red(parseFloat(targetAmount - toTokenAmount).toFixed(6))} VAI`);
 
         let action = 'yes';
 
         // Si esta mas caro de lo que quiero comprar
-        if(market_price < trade_price) {
+        if(market_price < target_price) {
 
             action = 'no';
             
@@ -81,9 +81,12 @@ async function run() {
             trade_pair: 'BUSDVAI',
             type: new_trade_type,
             amount: fromTokenAmount,
+            market_price,
+            target_price,
             base_price_sell: base_price,
             base_price_buy: (1/base_price),
-            market_price,
+            market_price_sell: market_price,
+            market_price_buy: (1/market_price),
             percent: process.env.PERCENT,
             estimated_gas: response.data.tx ? response.data.tx.gas : response.data.estimatedGas,
             gas_price: response.data.tx ? response.data.tx.gasPrice : 0,
@@ -98,7 +101,7 @@ async function run() {
         
         if(action == 'yes') {
 
-            console.log(chalk.black.bgGreen('\n=================================== Selling BUSD =================================='));
+            console.log(chalk.black.bgGreen('\n=================================== Selling BUSD ==================================\n'));
             
             // 1) HAGO EL TRADE
             let nonce = await web3.eth.getTransactionCount(process.env.ADDRESS_1);
@@ -150,13 +153,13 @@ async function run() {
 
         const fromToken = 'VAI';
 
-        const trade_price = parseFloat(1/(base_price*(100+parseFloat(process.env.PERCENT))/100)).toFixed(6);
+        const target_price = parseFloat(1/(base_price*(100+parseFloat(process.env.PERCENT))/100)).toFixed(6);
 
         const fromTokenAmount = process.env.AMOUNT;
 
-        const targetAmount = fromTokenAmount*trade_price;
+        const targetAmount = fromTokenAmount*target_price;
         
-        console.log(`<== Buy price: `+chalk.green(trade_price)+` - To Spend: ${chalk.green(parseFloat(targetAmount).toFixed(6))} BUSD`);
+        console.log(`<== Buy price: `+chalk.green(target_price)+` - To Spend: ${chalk.green(parseFloat(targetAmount).toFixed(6))} BUSD`);
 
         // VOY A 1INCH CON EL TOKEN Y EL PRECIO QUE QUIERO PAGAR
         const response  = await api_oneinch.getQuote(fromToken,fromTokenAmount);
@@ -169,12 +172,12 @@ async function run() {
 
         console.log(`==> Curr price: ${chalk.yellow(parseFloat(market_price).toFixed(6))} - Asking: ${chalk.yellow(parseFloat(toTokenAmount).toFixed(6))} BUSD`);
 
-        console.log(`==> Diff price: ${chalk.red(parseFloat(market_price - trade_price).toFixed(6))} - Waiting: ${chalk.red(parseFloat(toTokenAmount - targetAmount).toFixed(6))} BUSD`);
+        console.log(`==> Diff price: ${chalk.red(parseFloat(market_price - target_price).toFixed(6))} - Waiting: ${chalk.red(parseFloat(toTokenAmount - targetAmount).toFixed(6))} BUSD`);
 
         let action = 'yes';
 
         // Si esta mas caro de lo que quiero comprar
-        if(market_price > trade_price) {
+        if(market_price > target_price) {
 
             action = 'no';
             console.log(chalk.grey('<== Quiting'));
@@ -186,9 +189,12 @@ async function run() {
             trade_pair: 'BUSDVAI',
             type: new_trade_type,
             amount: fromTokenAmount,
+            market_price,
+            target_price,
             base_price_sell: base_price,
             base_price_buy: (1/base_price),
-            market_price,
+            market_price_sell: (1/market_price),
+            market_price_buy: market_price,
             percent: process.env.PERCENT,
             estimated_gas: response.data.tx ? response.data.tx.gas : response.data.estimatedGas,
             gas_price: response.data.tx ? response.data.tx.gasPrice : 0,
@@ -201,7 +207,7 @@ async function run() {
         
         if(action == 'yes') {
 
-            console.log(chalk.black.bgGreen('\n=================================== Buying BUSD ==================================='));
+            console.log(chalk.black.bgGreen('\n=================================== Buying BUSD ===================================\n'));
 
             // 1) HAGO EL TRADE
             let nonce = await web3.eth.getTransactionCount(process.env.ADDRESS_1);
@@ -252,4 +258,3 @@ async function run() {
 }
 
 cron.schedule(`*/${process.env.DELAY_MIN} * * * *`,() => { run(); });
-
