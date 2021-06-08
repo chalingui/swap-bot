@@ -23,7 +23,7 @@ const send = async (fromToken, fromTokenAmount, toToken, toTokenAmount, gasUsed,
     <strong>BSC Scan:</strong> https://bscscan.com/tx/${tx}`;
 
     const msg = {
-        to: 'carlos.sesma@gmail.com',
+        to: process.env.EMAIL,
         from: 'www@nodejs.xyu.com.ar', // Use the email address or domain you verified above
         subject,
         html
