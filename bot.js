@@ -21,7 +21,10 @@ var pjson = require('./package.json');
 
 async function run() {
 
-    console.log(chalk.inverse.yellow(`\n=================================== Bot v${pjson.version} ====================================\n`));
+    let [month, date, year]    = new Date().toLocaleDateString("en-US").split("/")
+    let [hour, minute, second] = new Date().toLocaleTimeString("en-US").split(/:| /)
+
+    console.log(chalk.inverse.yellow(`\n${date}/${month} ${hour}:${minute}:${second}======================== Bot v${pjson.version} ====================================\n`));
     // console.log(new Date());
 
     const base_price = parseFloat(process.env.BASE_PRICE).toFixed(6);
