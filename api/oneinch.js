@@ -20,7 +20,7 @@ const getQuote = async (fromToken,fromTokenAmount) => {
 
     try {
 
-        return await axios.get(process.env.API_1INCH_BSC_URL+'quote', { params });
+        return await axios.get(process.env.API_1INCH_BSC_URL+'swap', { params });
         
     } catch (error) {
         
