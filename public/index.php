@@ -1,33 +1,10 @@
-<?php
 
-include "includes/zsql.inc.php";
-include "includes/func.inc.php";
-
-// Target unificado
-$sql = "SELECT * FROM logs ORDER BY id";
-$arr = $db->get_results($sql);
-
-foreach($arr as $array) {
-
-    $arrDates[] = $array['date'];
-    $arrTarget[] = $array['type'] == 'sell' ? $array['target_price'] : $array['target_price'];
-    $arrMarket[] = $array['type'] == 'sell' ? $array['market_price_sell'] : $array['market_price_buy'];
-
-    $arrBaseSell[] = $array['base_price_sell'];
-    $arrBaseBuy[] = $array['base_price_buy'];
-
-}
-
-
-
-
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="refresh" content="60">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swap Bot Graph</title>
     <link rel="stylesheet" href="styles.css">
@@ -38,9 +15,38 @@ foreach($arr as $array) {
 
 
 
-<canvas id="myChart" width="1768" height="600" style="display: block; box-sizing: border-box; height: 600px; width: 1768px;"></canvas>
+<canvas id="myChart" width="1700" height="600" style="display: block; box-sizing: border-box; height: 600px; width: 1700px;"></canvas>
 <script>
 var ctx = document.getElementById('myChart');
+
+<?php
+
+include "includes/zsql.inc.php";
+include "includes/func.inc.php";
+
+$sql = "SELECT type FROM trades ORDER BY id DESC LIMIT 1";
+$type = $db->get_var($sql);
+
+$type = $type == 'SELL' ? 'buy' : 'sell';
+
+// Target unificado
+$sql = "SELECT * FROM logs WHERE type = '$type' ORDER BY id DESC";
+$sql = "SELECT * FROM logs WHERE 1 ORDER BY id DESC LIMIT 200";
+$arr = $db->get_results($sql);
+
+
+foreach($arr as $array) {
+
+    $arrDates[] = $array['date'];
+
+    $arrTarget[] = $array['target_price'];
+    $arrMarket[] = $array['market_price'];
+    $arrBase[] = $array['base_price'];
+
+    $arrTarget1[] = ($array['base_price']+$array['target_price'])/2;
+}
+
+?>
 
 var myChart = new Chart(ctx, {
     type: 'line',
@@ -66,29 +72,27 @@ var myChart = new Chart(ctx, {
             },
 
             {
-                label: 'Base Sell',
-                data: [<?php echo implode(', ',$arrBaseSell); ?>],
-                backgroundColor: 'rgb(200,200,200)',
-                borderColor: 'rgb(200,200,200)',
+                label: 'Target 1/2',
+                data: [<?php echo implode(', ',$arrTarget1); ?>],
+                backgroundColor: 'rgb(251,223,172)',
+                borderColor: 'rgb(251,223,172)',
                 pointRadius: 1,
                 tension: 0.1
             },
+
             {
-                label: 'Base buy',
-                data: [<?php echo implode(', ',$arrBaseBuy); ?>],
+                label: 'Base',
+                data: [<?php echo implode(', ',$arrBase); ?>],
                 backgroundColor: 'rgb(200,200,200)',
                 borderColor: 'rgb(200,200,200)',
                 pointRadius: 1,
                 tension: 0.1
             },
 
-                        // {
-            //     label: 'Base',
-            //     data: [<?php echo implode(', ',$arrBase); ?>],
-            //     backgroundColor: 'grey',
-            //     borderColor: 'grey',
-            //     tension: 0.1
-            // },
+
+
+
+
             
             
             

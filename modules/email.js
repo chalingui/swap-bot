@@ -13,7 +13,7 @@ const send = async (fromToken, fromTokenAmount, toToken, toTokenAmount, gasUsed,
     fromTokenAmount = parseFloat(fromTokenAmount).toFixed(4);
     toTokenAmount = parseFloat(toTokenAmount).toFixed(4);
 
-    const subject = `Vendidos ${fromTokenAmount} ${fromToken} por ${toTokenAmount} ${toToken}`;
+    const subject = `Vendidos ${fromTokenAmount} ${fromToken} por ${toTokenAmount} ${toToken} - ${tx}`;
 
     const html = `
     <== Bot v${pjson.version} ==><br>

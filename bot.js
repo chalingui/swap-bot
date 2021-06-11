@@ -24,12 +24,12 @@ async function run() {
     let [month, date, year]    = new Date().toLocaleDateString("en-US").split("/")
     let [hour, minute, second] = new Date().toLocaleTimeString("en-US").split(/:| /)
 
-    console.log(chalk.inverse.yellow(`\n${date}/${month} ${hour}:${minute}:${second}======================== Bot v${pjson.version} ====================================\n`));
+    console.log(chalk.inverse.yellow(`\n${date}/${month} ${hour}:${minute}:${second} ======================= Bot v${pjson.version} ===================================\n`));
     // console.log(new Date());
 
     const base_price = parseFloat(process.env.BASE_PRICE).toFixed(6);
 
-    console.log(chalk.yellow(`============ Base price: ${base_price} (${parseFloat(1/base_price).toFixed(6)}) | ${process.env.PERCENT}% spread | Amount: ${process.env.AMOUNT} =============\n`));
+    console.log(chalk.yellow(`=========== Base price: ${base_price} (${parseFloat(1/base_price).toFixed(6)}) | ${process.env.PERCENT}% spread | Amount: ${process.env.AMOUNT} ===========\n`));
 
     // ME FIJO EN QUE ESTOY Y CUANTO LO PAGUE
     // BUSCO EL ULTIMO MOVIMIENTO
@@ -48,9 +48,11 @@ async function run() {
 
         const fromTokenAmount = process.env.AMOUNT;
 
+        console.log(`==> Spending: ${parseFloat(fromTokenAmount).toFixed(6)} ${fromToken}\n`);
+
         const targetAmount = fromTokenAmount*target_price;
 
-        console.log(`<== Sell price: `+chalk.green(target_price)+` - Wanting: ${chalk.green(parseFloat(targetAmount).toFixed(6))} VAI`);
+        console.log(`      Sell price: `+chalk.green(target_price)+` - Wanting: ${chalk.green(parseFloat(targetAmount).toFixed(6))} VAI`);
 
         // VOY A 1INCH CON EL TOKEN Y EL PRECIO QUE QUIERO PAGAR
         const response  = await api_oneinch.getQuote(fromToken,fromTokenAmount);
@@ -61,9 +63,9 @@ async function run() {
 
         const market_price = toTokenAmount/fromTokenAmount;
 
-        console.log(`==> Curr price: ${chalk.yellow(parseFloat(market_price).toFixed(6))} - Getting: ${chalk.yellow(parseFloat(toTokenAmount).toFixed(6))} VAI`);
+        console.log(`    Market price: ${chalk.yellow(parseFloat(market_price).toFixed(6))} - Getting: ${chalk.yellow(parseFloat(toTokenAmount).toFixed(6))} VAI`);
 
-        console.log(`==> Diff price: ${chalk.red(parseFloat(target_price - market_price).toFixed(6))} - Waiting: ${chalk.red(parseFloat(targetAmount - toTokenAmount).toFixed(6))} VAI`);
+        console.log(`      Diff price: ${chalk.red(parseFloat(target_price - market_price).toFixed(6))} - Waiting:   ${chalk.red(parseFloat(targetAmount - toTokenAmount).toFixed(6))} VAI\n`);
 
         let action = 'yes';
 
@@ -83,10 +85,7 @@ async function run() {
             amount: fromTokenAmount,
             market_price,
             target_price,
-            base_price_sell: base_price,
-            base_price_buy: (1/base_price),
-            market_price_sell: market_price,
-            market_price_buy: (1/market_price),
+            base_price,
             percent: process.env.PERCENT,
             estimated_gas: response.data.tx ? response.data.tx.gas : response.data.estimatedGas,
             gas_price: response.data.tx ? response.data.tx.gasPrice : 0,
@@ -105,20 +104,20 @@ async function run() {
             
             // 1) HAGO EL TRADE
             let nonce = await web3.eth.getTransactionCount(process.env.ADDRESS_1);
-            console.log('==> Nonce value: '+nonce);
+            console.log('=== Nonce value: '+nonce);
             
             nonce = await web3.utils.toHex(nonce);
 
-            console.log('==> Signing transaction');
+            console.log('=== Signing transaction');
             
             const tx = await web3.eth.accounts.signTransaction(response.data.tx, process.env.PRIVATE_KEY_1);
 
-            console.log('<== Sending signed transaction');
+            console.log('=== Sending signed transaction');
             
             // deploy our transaction
             const receipt = await web3.eth.sendSignedTransaction(tx.rawTransaction);
             
-            console.log('==> Transaction succesfull with hash: ',receipt.transactionHash);
+            console.log('=== Transaction succesfull with hash: ',receipt.transactionHash);
 
             // 2) GRABO EL TRADE EN LA DB
             var trade = {
@@ -153,13 +152,16 @@ async function run() {
 
         const fromToken = 'VAI';
 
-        const target_price = parseFloat(1/(base_price*(100+parseFloat(process.env.PERCENT))/100)).toFixed(6);
+        const target_price = parseFloat(base_price*(100-parseFloat(process.env.PERCENT))/100).toFixed(6);
 
-        const fromTokenAmount = process.env.AMOUNT;
+        // YO SE QUE QUIERO RECOMPRAR MIS 100 BUSD
+        const fromTokenAmount = String(process.env.AMOUNT*target_price);
 
-        const targetAmount = fromTokenAmount*target_price;
+        const targetAmount = process.env.AMOUNT;
         
-        console.log(`<== Buy price: `+chalk.green(target_price)+` - To Spend: ${chalk.green(parseFloat(targetAmount).toFixed(6))} BUSD`);
+        console.log(`==> Spending: ${parseFloat(fromTokenAmount).toFixed(6)} ${fromToken}\n`);
+
+        console.log(`       Buy price: `+chalk.green(target_price)+` - Wanting: ${chalk.green(parseFloat(targetAmount).toFixed(6))} BUSD`);
 
         // VOY A 1INCH CON EL TOKEN Y EL PRECIO QUE QUIERO PAGAR
         const response  = await api_oneinch.getQuote(fromToken,fromTokenAmount);
@@ -168,11 +170,11 @@ async function run() {
 
         const toTokenAmount = web3.utils.fromWei(response.data.toTokenAmount, 'ether');
 
-        const market_price = toTokenAmount/fromTokenAmount;
+        const market_price = fromTokenAmount/toTokenAmount;
 
-        console.log(`==> Curr price: ${chalk.yellow(parseFloat(market_price).toFixed(6))} - Asking: ${chalk.yellow(parseFloat(toTokenAmount).toFixed(6))} BUSD`);
+        console.log(`    Market price: ${chalk.yellow(parseFloat(market_price).toFixed(6))} - Getting: ${chalk.yellow(parseFloat(toTokenAmount).toFixed(6))} BUSD`);
 
-        console.log(`==> Diff price: ${chalk.red(parseFloat(market_price - target_price).toFixed(6))} - Waiting: ${chalk.red(parseFloat(toTokenAmount - targetAmount).toFixed(6))} BUSD`);
+        console.log(`            Diff: ${chalk.red(parseFloat(market_price - target_price).toFixed(6))} - Waiting:  ${chalk.red(parseFloat(targetAmount - toTokenAmount).toFixed(6))} BUSD\n`);
 
         let action = 'yes';
 
@@ -191,10 +193,7 @@ async function run() {
             amount: fromTokenAmount,
             market_price,
             target_price,
-            base_price_sell: base_price,
-            base_price_buy: (1/base_price),
-            market_price_sell: (1/market_price),
-            market_price_buy: market_price,
+            base_price,
             percent: process.env.PERCENT,
             estimated_gas: response.data.tx ? response.data.tx.gas : response.data.estimatedGas,
             gas_price: response.data.tx ? response.data.tx.gasPrice : 0,
@@ -211,20 +210,20 @@ async function run() {
 
             // 1) HAGO EL TRADE
             let nonce = await web3.eth.getTransactionCount(process.env.ADDRESS_1);
-            console.log('==> Nonce value: '+nonce);
+            console.log('=== Nonce value: '+nonce);
             
             nonce = await web3.utils.toHex(nonce);
 
-            console.log('==> Signing transaction');
+            console.log('=== Signing transaction');
             
             const tx = await web3.eth.accounts.signTransaction(response.data.tx, process.env.PRIVATE_KEY_1);
 
-            console.log('<== Sending signed transaction');
+            console.log('=== Sending signed transaction');
             
             // deploy our transaction
             const receipt = await web3.eth.sendSignedTransaction(tx.rawTransaction);
             
-            console.log('==> Transaction succesfull with hash: ',receipt.transactionHash);
+            console.log('=== Transaction succesfull with hash: ',receipt.transactionHash);
 
             // 2) GRABO EL TRADE EN LA DB
             var trade = {
@@ -258,3 +257,5 @@ async function run() {
 }
 
 cron.schedule(`*/${process.env.DELAY_MIN} * * * *`,() => { run(); });
+
+// run();
