@@ -4,34 +4,35 @@ const chalk = require('chalk');
 
 const getQuote = async (fromToken,fromTokenAmount) => {
 
-    const fromTokenAddress = fromToken == 'BUSD' ? process.env.COIN_BUSD : process.env.COIN_VAI;
-    const toTokenAddress = fromToken == 'BUSD' ? process.env.COIN_VAI : process.env.COIN_BUSD;
+    const fromTokenAddress = fromToken == process.env.COIN_1 ? process.env.COIN_1_ADDRESS : process.env.COIN_2_ADDRESS;
+    const toTokenAddress = fromToken == process.env.COIN_1 ? process.env.COIN_2_ADDRESS : process.env.COIN_1_ADDRESS;
     
     const fromTokenAmountWei = web3.utils.toWei(fromTokenAmount,'ether');
 
     const params = {
-        "fromAddress": process.env.ADDRESS_1,
+        "fromAddress": process.env.WALLET_ADDRESS,
         "fromTokenAddress": fromTokenAddress,
         "toTokenAddress": toTokenAddress,
         "amount": fromTokenAmountWei,
-        "slippage": '1'
+        "slippage": process.env.SLIPPAGE,
     }
 
     // VOY PROBANDO CON QUOTE PORQUE EL SWAP NO ME DEJA SINO TENGO LA PLATA
 
+    var method = process.env.DEBUG == "false" ? 'swap' : 'quote'
+
     try {
 
-        return await axios.get(process.env.API_1INCH_BSC_URL+'swap', { params });
+        return await axios.get(process.env.API_1INCH_BSC_URL+method, { params }, { timeout: 30000 });
         
     } catch (error) {
         
         console.error(chalk.black.bgRed("Error en 1inch"));
 
-        // console.log(error);
-        
         if(error.isAxiosError) {
 
-            console.log(chalk.red(error.response.data.message));
+            // console.log(chalk.red(error.response.data.message));
+            console.log(chalk.red(error));
 
         }
 

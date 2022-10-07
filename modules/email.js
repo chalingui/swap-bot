@@ -13,11 +13,11 @@ const send = async (fromToken, fromTokenAmount, toToken, toTokenAmount, gasUsed,
     fromTokenAmount = parseFloat(fromTokenAmount).toFixed(4);
     toTokenAmount = parseFloat(toTokenAmount).toFixed(4);
 
-    const subject = `Vendidos ${fromTokenAmount} ${fromToken} por ${toTokenAmount} ${toToken} - ${tx}`;
+    const subject = `${fromTokenAmount} ${fromToken} ==> ${toTokenAmount} ${toToken} - ${tx}`;
 
     const html = `
     <== Bot v${pjson.version} ==><br>
-    Vendidos <strong>${fromTokenAmount} ${fromToken}</strong> por <strong>${toTokenAmount} ${toToken}</strong><br>
+    Swaped <strong>${fromTokenAmount} ${fromToken}</strong> por <strong>${toTokenAmount} ${toToken}</strong><br>
     <strong>GasUsed:</strong> ${gasUsed}<br>
     <strong>Hash:</strong> ${tx}<br>
     <strong>BSC Scan:</strong> https://bscscan.com/tx/${tx}`;
